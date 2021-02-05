@@ -11,15 +11,15 @@ namespace CoreBuilderProject
             
             var buildManager = new MyBuildManager();
             buildManager.AddAgent("Agent1", filename, 5);
-            //buildManager.AddAgent("Agent2", filename, 10);
+            buildManager.AddAgent("Agent2", filename, 10);
 
             //Console.Write("Press any key to stop agent...");
             Console.ReadKey();
 
             buildManager.RemoveAgent("Agent1");
 
-            //Console.ReadKey();
-            //buildManager.RemoveAgent("Agent2");
+            Console.ReadKey();
+            buildManager.RemoveAgent("Agent2");
 
             Console.WriteLine("Agents canceled");            
         }

@@ -7,19 +7,22 @@ namespace CoreBuilderProject
 {
     public class BuildAgent
     {
-        public string Id { get; private set;}
-        public string BuildPath {get; private set; }
+        public string Id { get; private set; }
+        public string BuildPath { get; private set; }
 
         public int TimeIntervalSeconds { get; set; }
-        
+
+        private object _agentLock;
+
         private readonly Thread _t;
         private bool _done;
 
-        public BuildAgent(string id, string solutionPath, int seconds)
+        public BuildAgent(string id, string solutionPath, int seconds, object agentLock)
         {
             Id = id;
             BuildPath = solutionPath;
             TimeIntervalSeconds = seconds;
+            _agentLock = agentLock;
             _done = false;
 
             _t = new Thread(Run);
@@ -32,9 +35,12 @@ namespace CoreBuilderProject
             {
                 try
                 {
-                    var exitCode = Do("build", BuildPath);
-                    if (exitCode == 0)
-                        Do("test", BuildPath);
+                    lock (_agentLock)
+                    {
+                        var exitCode = Do("build", BuildPath);
+                        if (exitCode == 0)
+                            Do("test", BuildPath);
+                    }
                     Thread.Sleep(TimeIntervalSeconds * 1000);
                 }
                 catch (ThreadInterruptedException)
@@ -67,8 +73,8 @@ namespace CoreBuilderProject
 
             Console.WriteLine("Writing to log file...");
             string logPath = buildPath + @"\logs\";
-            if (! Directory.Exists(logPath))
-            { 
+            if (!Directory.Exists(logPath))
+            {
                 Directory.CreateDirectory(logPath);
             }
             using (var output = File.AppendText(logPath + $"{Id}.log"))
